@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GCET SPORTS CLUB ⚽</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #6b5cff; --secondary: #9f7aea; --accent: #fca311;
+            --bg-dark: #0b102a; --card-bg: rgba(255, 255, 255, 0.08);
+            --text-main: #ffffff; --text-dim: #b0b0cc;
+            --success: #10b981; --danger: #ef4444; --nav-bg: #12163f;
+            --border: rgba(255,255,255,0.15);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { 
+            background: linear-gradient(180deg, var(--bg-dark), #12163f);
+            background-size: cover; background-position: center; background-attachment: fixed;
+            color: var(--text-main); min-height: 100vh; padding-bottom: 90px; overflow-x: hidden; 
+        }
+
+        /* FLOATING MESSAGE BANNER */
+        #floatTag { 
+            position: fixed; top: 100px; right: -100%; 
+            background: var(--primary); color: white; 
+            padding: 12px 25px; border-radius: 15px 0 0 15px; 
+            z-index: 999; transition: 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            font-weight: bold; box-shadow: -5px 5px 15px rgba(0,0,0,0.4);
+            border: 1px solid var(--border);
+        }
+
+        .falling-container { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+        .falling-item { position: absolute; color: rgba(255,255,255,0.05); animation: fall linear infinite; }
+        @keyframes fall { 0% { transform: translateY(-10vh) rotate(0deg); } 100% { transform: translateY(110vh) rotate(360deg); } }
+
+        #loginOverlay { position: fixed; inset: 0; background: #0b102a; z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .login-card { background: #1e1e3f; width: 100%; max-width: 400px; padding: 2.5rem; border-radius: 28px; text-align: center; border: 1px solid var(--border); }
+        .login-logo { width: 51mm; height: 51mm; border-radius: 50%; border: 3px solid var(--primary); margin-bottom: 15px; object-fit: cover; }
+
+        .container { padding: 20px; max-width: 600px; margin: 0 auto; position: relative; z-index: 5; }
+        .top-bar { padding: 20px; display: flex; justify-content: space-between; align-items: center; position: relative; z-index: 10; }
+        .avatar { width: 45px; height: 45px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+        
+        .stat-card, .card { background: var(--card-bg); padding: 20px; border-radius: 20px; border: 1px solid var(--border); margin-bottom: 15px; backdrop-filter: blur(12px); }
+        .action-btn { background: var(--primary); color: white; border: none; padding: 14px; border-radius: 12px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px; transition: 0.3s; }
+        input, select { width: 100%; padding: 12px; border-radius: 10px; border: none; background: rgba(255,255,255,0.08); color: white; margin-bottom: 10px; outline: none; }
+        
+        .horizontal-scroll { display: flex; gap: 15px; overflow-x: auto; padding-bottom: 15px; scrollbar-width: none; }
+        .event-chip { min-width: 160px; padding: 15px; border-radius: 18px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; position: relative; flex-shrink: 0; }
+        
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin: 25px 0 10px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+        .add-btn { background: var(--success); color: white; border: none; padding: 6px 12px; border-radius: 8px; font-size: 11px; cursor: pointer; }
+
+        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; height: 80px; background: var(--nav-bg); display: flex; justify-content: space-around; align-items: center; z-index: 1000; border-top: 1px solid var(--border); }
+        .nav-item { text-align: center; color: var(--text-dim); cursor: pointer; flex: 1; font-size: 10px; display: flex; flex-direction: column; align-items: center; }
+        .nav-item i, .nav-item span { font-size: 20px; margin-bottom: 4px; }
+        .nav-item.active { color: var(--primary); transform: translateY(-5px); transition: 0.3s; }
+
+        .content-page { display: none; animation: fadeIn 0.4s ease; }
+        .content-page.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .member-img { width: 51mm; height: 51mm; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary); }
+        .hidden { display: none !important; }
+        .back-btn { cursor: pointer; color: var(--primary); margin-bottom: 15px; font-weight: bold; display: inline-block; }
+    </style>
+</head>
+<body>
+
+    <div class="falling-container" id="fallingItems"></div>
+    <div id="floatTag">WELCOME TO GCET SPORTS</div>
+    
+    <input type="file" id="logoUploader" accept="image/*" style="display:none;">
+    <input type="file" id="billUploader" accept="image/*" style="display:none;">
+    <input type="file" id="eventPhotoInp" accept="image/*" style="display:none;">
+    <input type="file" id="memberPhotoInp" accept="image/*" style="display:none;">
+    <input type="file" id="mentorPhotoInp" accept="image/*" style="display:none;">
+    <input type="file" id="tournamentPhotoInp" accept="image/*" style="display:none;">
+
+    <div id="loginOverlay">
+        <div class="login-card">
+            <img id="clubLogo" src="https://i.ibb.co/Vp88yG9/Whats-App-Image-2026-01-13-at-12-16-34-PM.jpg" class="login-logo">
+            <h1 style="color:var(--primary); font-size:22px; margin-bottom:20px;">GCET SPORTS CLUB</h1>
+            <div style="display: flex; gap: 8px; margin-bottom: 15px;">
+                <button class="action-btn role-btn active" id="selStudent" onclick="chooseRole('student')">Student</button>
+                <button class="action-btn role-btn" id="selCommittee" onclick="chooseRole('committee')" style="background:transparent; border:1px solid var(--primary)">Core</button>
+                <button class="action-btn role-btn" id="selAdmin" onclick="chooseRole('admin')" style="background:transparent; border:1px solid var(--primary)">Admin</button>
+            </div>
+            <input type="text" id="uInput" class="login-input hidden" placeholder="Enter ID">
+            <input type="password" id="pInput" class="login-input hidden" placeholder="Password">
+            <button class="action-btn" onclick="loginAction()">SIGN IN</button>
+        </div>
+    </div>
+
+    <div class="top-bar">
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <div class="avatar" id="userAvatar">?</div>
+            <div><p style="font-size: 10px; color: var(--text-dim);">Signed in as</p><p style="font-weight: bold; font-size: 14px;" id="uDisplay">Guest</p></div>
+        </div>
+        <button onclick="logout()" style="background:rgba(255,255,255,0.1); border:none; color:white; padding:8px 12px; border-radius:10px;"><i class="fas fa-sign-out-alt"></i></button>
+    </div>
+
+    <div id="pageHome" class="content-page active">
+        <div class="container" id="dashboardHome">
+            <div style="display: flex; gap: 10px;">
+                <div class="stat-card" style="text-align:center; flex:1;"><small>Active Events</small><h2 id="countE">0</h2></div>
+                <div class="stat-card" style="text-align:center; flex:1;"><small>Committee</small><h2 id="countC">0</h2></div>
+            </div>
+
+            <div class="section-header"><h3>Holidays & Break</h3> <button class="add-btn core-only hidden" onclick="addHoliday()">+ Manual</button></div>
+            <div class="horizontal-scroll" id="hList"></div>
+
+            <div class="section-header"><h3>Our Mentors</h3> 
+                <!-- <button class="add-btn admin-only hidden" onclick="addMentor()">+ Add</button> -->
+            </div>
+            <!-- <div class="horizontal-scroll" id="mentorListHome"></div> -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px;">
+                <div class="card" onclick="openTab('mentors')">👨‍💼 Mentors</div>
+               
+            </div>
+
+            <h2 style="margin:20px 0 10px;">Core Committee</h2>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <div class="card" onclick="openTab('core')">👨‍💼 Core Head</div>
+                <div class="card" onclick="openTab('equipment')">🏀 Equipment Head</div>
+                <div class="card" onclick="openTab('graphic')">🎨 Graphic Head</div>
+                <div class="card" onclick="openTab('reels')">🎬 Reels & VFX Head</div>
+                <div class="card" onclick="openTab('reels')">🤑 Treasurer Head</div>
+                <div class="card" onclick="openTab('reels')">🫂 Volunteer Head</div>
+                <div class="card" onclick="openTab('reels')">📝 Documentation Head</div>
+                <div class="card" onclick="openTab('reels')">💰 Logistics Head</div>
+            </div>
+        </div>
+        <div class="container hidden" id="dashboardDetail">
+            <div class="back-btn" onclick="closeTab()">⬅ Back</div>
+            <h3 id="tabHeader"></h3>
+            <div id="memberList"></div>
+            <button class="action-btn admin-only hidden" id="addMemberBtn" onclick="addMember()">➕ Add Member</button>
+        </div>
+    </div>
+
+    <div id="pageEvents" class="content-page">
+        <div class="container">
+            <h2 style="margin:20px 0 10px;">Tournaments Gallery</h2>
+            <div class="section-header"><h3>Tournaments</h3> <button class="add-btn core-only hidden" onclick="addTournament()">+ Add Tournament</button></div>
+            
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;">
+                <a href="https://kheloindia.gov.in" target="_blank" class="portal-card">
+                    <div class="card" style="text-align:center; background: linear-gradient(45deg, #ff9933, #ffffff, #138808); color: #000; padding: 15px;">
+                        <i class="fas fa-external-link-alt"></i> <br> Khelo India
+                    </div>
+                    
+                </a>
+                <a href="https://khelmahakumbh.gujarat.gov.in" target="_blank" class="portal-card">
+                    <div class="card" style="text-align:center; background: #2d3436; color: gold; border: 1px solid gold; padding: 15px;">
+                        <i class="fas fa-trophy"></i> <br> Khel Mahakumbh
+                    </div>
+                </a>
+            </div>
+            <div id="tournamentGallery" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;"></div>
+            <div id="eventGallery" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;"></div>
+        </div>
+    </div>
+
+    <div id="pageForm" class="content-page">
+        <div class="container">
+            <div class="section-header"><h2>Registration Form</h2> <button id="regToggleBtn" class="add-btn core-only hidden" onclick="toggleReg()">Unpublish</button></div>
+            <div id="regFormArea" class="stat-card">
+                <input type="text" id="rName" class="login-input" placeholder="Full Name">
+                <input type="email" id="rEmail" class="login-input" placeholder="Email ID">
+                <input type="text" id="rRoll" class="login-input" placeholder="Roll Number">
+                <input type="text" id="rMob" class="login-input" placeholder="Mobile Number">
+                <select id="rSem" class="login-input">
+                    <option value="">Select Semester</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                </select>
+                <select id="rYear" class="login-input">
+                    <option value="">Select Year</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                </select>
+                <input type="text" id="rBranch" class="login-input" placeholder="Branch">
+                <select id="rProg" class="login-input">
+                    <option value="B.TECH">B.TECH</option>
+                    <option value="DIPLOMA">DIPLOMA</option>
+                </select>
+                <select id="rSport" class="login-input"></select>
+                <button class="action-btn" onclick="submitRegistration()" style="background:var(--success);">SUBMIT APPLICATION</button>
+            </div>
+            <div id="regOfflineMsg" class="stat-card hidden" style="text-align:center; color:var(--danger);"><h3>REGISTRATION CLOSED</h3></div>
+        </div>
+    </div>
+
+    <div id="pageLog" class="content-page">
+        <div class="container">
+            <div class="section-header"><h2>Attendance</h2> <button id="logToggleBtn" class="add-btn core-only hidden" onclick="toggleLog()">Unpublish</button></div>
+            <div id="logFormArea" class="card">
+                <input type="text" id="atName" placeholder="Student Name">
+                <input type="text" id="atRoll" placeholder="Roll No">
+                <select id="atSport"></select>
+                <button class="action-btn" onclick="markAttendance()">SUBMIT ENTRY</button>
+            </div>
+            <div id="logOfflineMsg" class="stat-card hidden" style="text-align:center; color:var(--danger);"><h3>LOGS OFFLINE</h3></div>
+            <div id="attList"></div>
+            <button class="action-btn core-only hidden" style="background:var(--success)" onclick="exportLog()">📥 Export Attendance</button>
+        </div>
+    </div>
+
+    <div id="pageBudget" class="content-page">
+        <div class="container">
+            <div class="section-header"><h2>Budget Tracking</h2> <button class="add-btn core-only hidden" onclick="triggerExpense()">+ Add Expense</button></div>
+            <div class="stat-card" style="text-align:center; background:var(--primary);">Total Expenses: ₹<span id="totalExpAmt">0</span></div>
+            <div id="budgetList"></div>
+            <button class="action-btn core-only hidden" style="background:var(--success)" onclick="exportBudget()">📥 Export Budget</button>
+        </div>
+    </div>
+
+    <div id="pageAdmin" class="content-page">
+        <div class="container">
+            <h1>Admin Control</h1>
+            <div class="card">
+                <h3>Style Studio</h3>
+                <input type="text" id="bgUrlInput" placeholder="Background URL">
+                <button class="action-btn" onclick="updateBg()">Save Theme</button>
+                <input type="text" id="bannerTextInp" placeholder="Banner Message" style="margin-top:15px;">
+                <button class="action-btn" onclick="saveBanner()">Update & Show Banner</button>
+                <button class="action-btn" style="background:var(--danger)" onclick="hideBanner()">Hide Banner</button>
+            </div>
+            <div class="card">
+                <h3>Core Access Management</h3>
+                <div id="coreManager"></div>
+                <button class="action-btn" onclick="addCoreID()">+ Issue New ID</button>
+            </div>
+            <div class="card">
+                <h3>Branding</h3>
+                <button class="action-btn" onclick="document.getElementById('logoUploader').click()">Change Club Logo</button>
+            </div>
+        </div>
+    </div>
+
+    <nav class="bottom-nav">
+        <div class="nav-item active" onclick="switchPage('Home', this)"><span>🏠</span>Home</div>
+        <div class="nav-item" onclick="switchPage('Events', this)"><span>🏆</span>Events</div>
+        <div class="nav-item" onclick="switchPage('Form', this)"><span>✍️</span>Join</div>
+        <div id="navLog" class="nav-item core-only hidden" onclick="switchPage('Log', this)"><span>📋</span>Log</div>
+        <div id="navBudget" class="nav-item core-only hidden" onclick="switchPage('Budget', this)"><span>📊</span>Budget</div>
+        <div id="navAdmin" class="nav-item admin-only hidden" onclick="switchPage('Admin', this)"><span>👤</span>Admin</div>
+    </nav>
+
+    <script>
+        let coreDB = JSON.parse(localStorage.getItem('g_core_db')) || {"1111": "CORE2026"};
+        let currentAuth = sessionStorage.getItem('gcet_auth');
+        let currentTab = "";
+
+        // AUTH ENGINE
+        function chooseRole(r) {
+            window.userRole = r;
+            document.querySelectorAll('.role-btn').forEach(b => b.style.opacity = '0.5');
+            document.getElementById('sel'+r.charAt(0).toUpperCase()+r.slice(1)).style.opacity = '1';
+            uInput.classList.toggle('hidden', r !== 'committee');
+            pInput.classList.toggle('hidden', r === 'student');
+        }
+        function loginAction() {
+            const id = uInput.value; const pass = pInput.value;
+            if(userRole==='admin' && pass==='GCET2351') sessionStorage.setItem('gcet_auth', 'admin');
+            else if(userRole==='committee' && coreDB[id]===pass) sessionStorage.setItem('gcet_auth', 'core');
+            else if(userRole==='student') sessionStorage.setItem('gcet_auth', 'student');
+            else return alert("Access Denied");
+            location.reload();
+        }
+        function logout() { sessionStorage.clear(); location.reload(); }
+        function switchPage(p, el) {
+            document.querySelectorAll('.content-page').forEach(page => page.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+            document.getElementById('page'+p).classList.add('active'); el.classList.add('active');
+            if(p === 'Events') {
+                renderTournaments();
+            }
+        }
+
+        // --- OG BUDGET ENGINE ---
+        function triggerExpense() {
+            const n = prompt("Item:"); const a = prompt("Amount:");
+            if(n && a) {
+                if(confirm("Upload Bill?")) {
+                    billUploader.onchange = (e) => {
+                        let r = new FileReader();
+                        r.onload = () => saveExpense(n, a, r.result);
+                        r.readAsDataURL(e.target.files[0]);
+                    }
+                    billUploader.click();
+                } else saveExpense(n, a, null);
+            }
+        }
+        function saveExpense(n, a, img) {
+            let exp = JSON.parse(localStorage.getItem('expenses') || "[]");
+            exp.push({n, a: parseFloat(a), img, date: new Date().toLocaleDateString()});
+            localStorage.setItem('expenses', JSON.stringify(exp));
+            renderBudget();
+        }
+        function renderBudget() {
+            let exp = JSON.parse(localStorage.getItem('expenses') || "[]");
+            let total = 0;
+            budgetList.innerHTML = exp.map((e,i) => {
+                total += e.a;
+                return `<div class="stat-card" style="display:flex; justify-content:space-between; align-items:center;">
+                    <div><b>${e.n}</b><br><small style="color:red">₹${e.a}</small></div>
+                    <div style="display:flex; gap:12px;">
+                        ${e.img ? `<i class="fas fa-file-invoice" onclick="window.open('${e.img}')"></i>` : ''}
+                        <i class="fas fa-trash" onclick="delExp(${i})"></i>
+                    </div>
+                </div>`;
+            }).join('');
+            totalExpAmt.innerText = total.toLocaleString();
+        }
+        function delExp(i) { let exp = JSON.parse(localStorage.getItem('expenses')); exp.splice(i,1); localStorage.setItem('expenses', JSON.stringify(exp)); renderBudget(); }
+
+        // --- EXPORT LOGIC ---
+        function exportLog() {
+            let data = JSON.parse(localStorage.getItem('att_log') || "[]");
+            const ws = XLSX.utils.json_to_sheet(data);
+            const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Attendance");
+            XLSX.writeFile(wb, "GCET_Attendance.xlsx");
+        }
+        function exportBudget() {
+            let data = JSON.parse(localStorage.getItem('expenses') || "[]");
+            const ws = XLSX.utils.json_to_sheet(data);
+            const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Budget");
+            XLSX.writeFile(wb, "GCET_Budget.xlsx");
+        }
+
+        // --- EVENT SYSTEM ---
+        function addEvent() {
+            const n = prompt("Event Name:");
+            if(n) {
+                eventPhotoInp.onchange = (e) => {
+                    let r = new FileReader();
+                    r.onload = () => {
+                        let evs = JSON.parse(localStorage.getItem('g_events') || "[]");
+                        evs.push({n, img: r.result});
+                        localStorage.setItem('g_events', JSON.stringify(evs));
+                        renderEvents();
+                    }
+                    r.readAsDataURL(e.target.files[0]);
+                }
+                eventPhotoInp.click();
+            }
+        }
+        function renderEvents() {
+            let evs = JSON.parse(localStorage.getItem('g_events') || "[]");
+            eventGallery.innerHTML = evs.map(e => `<div class="stat-card" style="text-align:center;"><img src="${e.img}" style="width:100%; height:110px; object-fit:cover; border-radius:10px;"><p>${e.n}</p></div>`).join('');
+            countE.innerText = evs.length;
+        }
+
+        // --- TOURNAMENT SYSTEM ---
+
+        function addTournament() {
+            const name = prompt("Name:");
+            const date = prompt("Date:");
+            if(name && date) {
+                tournamentPhotoInp.onchange = (e) => {
+                    let r = new FileReader();
+                    r.onload = () => {
+                        let tournaments = JSON.parse(localStorage.getItem('g_tournaments') || "[]");
+                        tournaments.push({name, img: r.result, date});
+                        localStorage.setItem('g_tournaments', JSON.stringify(tournaments));
+                        renderTournaments();
+                    };
+                    r.readAsDataURL(e.target.files[0]);
+                };
+                tournamentPhotoInp.click();
+            }
+        }
+        
+        function renderTournaments() {
+            const gallery = document.getElementById('tournamentGallery');
+            if(!gallery) return;
+            
+            let tournaments = JSON.parse(localStorage.getItem('g_tournaments') || "[]");
+            const isCore = currentAuth === 'admin' || currentAuth === 'core';
+            gallery.innerHTML = tournaments.map((t, i) => `<div class="stat-card" style="text-align:center; position:relative;">
+                <img src="${t.img}" style="width:100%; height:110px; object-fit:cover; border-radius:10px; margin-bottom:8px;">
+                <p style="font-weight:bold; margin-bottom:4px;">${t.name}</p>
+                <small style="color:var(--text-dim);">${t.date}</small>
+                ${isCore ? `<div style="position:absolute; top:8px; right:8px; display:flex; gap:8px;">
+                    <i class="fas fa-edit" onclick="editTournament(${i})" style="cursor:pointer; color:var(--accent); font-size:14px; background:rgba(0,0,0,0.5); padding:4px; border-radius:4px;"></i>
+                    <i class="fas fa-trash" onclick="deleteTournament(${i})" style="cursor:pointer; color:var(--danger); font-size:14px; background:rgba(0,0,0,0.5); padding:4px; border-radius:4px;"></i>
+                </div>` : ''}
+            </div>`).join('');
+            
+            // Populate sport dropdowns with tournament names
+            let opts = tournaments.map(t => `<option value="${t.name}">${t.name}</option>`).join('');
+            if(rSport) rSport.innerHTML = opts || '<option>No Active Tournaments</option>';
+            if(atSport) atSport.innerHTML = opts || '<option>No Active Tournaments</option>';
+        }
+        function editTournament(index) {
+            if(currentAuth !== 'admin' && currentAuth !== 'core') {
+                alert("Only admin/core can edit tournaments");
+                return;
+            }
+            let tournaments = JSON.parse(localStorage.getItem('g_tournaments') || "[]");
+            if(index >= 0 && index < tournaments.length) {
+                const newName = prompt("Edit Tournament Name:", tournaments[index].name);
+                const newDate = prompt("Edit Tournament Date:", tournaments[index].date);
+                if(newName && newDate) {
+                    if(confirm("Change image?")) {
+                        const inp = document.getElementById('tournamentPhotoInp');
+                        if(inp) {
+                            inp.onchange = (e) => {
+                                if(e.target.files && e.target.files[0]) {
+                                    let r = new FileReader();
+                                    r.onload = () => {
+                                        tournaments[index] = {name: newName, date: newDate, img: r.result};
+                                        localStorage.setItem('g_tournaments', JSON.stringify(tournaments));
+                                        renderTournaments();
+                                    };
+                                    r.readAsDataURL(e.target.files[0]);
+                                }
+                            }
+                            inp.click();
+                        }
+                    } else {
+                        tournaments[index] = {name: newName, date: newDate, img: tournaments[index].img || null};
+                        localStorage.setItem('g_tournaments', JSON.stringify(tournaments));
+                        renderTournaments();
+                    }
+                }
+            }
+        }
+        function deleteTournament(index) {
+            if(currentAuth !== 'admin' && currentAuth !== 'core') {
+                alert("Only admin/core can delete tournaments");
+                return;
+            }
+            if(confirm("Delete this tournament?")) {
+                let tournaments = JSON.parse(localStorage.getItem('g_tournaments') || "[]");
+                tournaments.splice(index, 1);
+                localStorage.setItem('g_tournaments', JSON.stringify(tournaments));
+                renderTournaments();
+            }
+        }
+
+        // --- TOGGLES ---
+        function toggleLog() { let s = localStorage.getItem('log_s')==='OFF'?'ON':'OFF'; localStorage.setItem('log_s', s); location.reload(); }
+        function toggleReg() { let s = localStorage.getItem('reg_s')==='OFF'?'ON':'OFF'; localStorage.setItem('reg_s', s); location.reload(); }
+
+        // --- ADMIN STYLING ---
+        function updateBg() { localStorage.setItem('g_bg', bgUrlInput.value); location.reload(); }
+        function saveBanner() { localStorage.setItem('g_msg', bannerTextInp.value); localStorage.setItem('g_msg_s', 'Y'); location.reload(); }
+        function hideBanner() { localStorage.setItem('g_msg_s', 'N'); location.reload(); }
+        
+        function addCoreID() {
+            const i = prompt("ID:"); const p = prompt("Pass:");
+            if(i && p) { coreDB[i] = p; localStorage.setItem('g_core_db', JSON.stringify(coreDB)); renderAdminCores(); }
+        }
+        function renderAdminCores() {
+            coreManager.innerHTML = Object.keys(coreDB).map(id => `
+                <div style="display:flex; justify-content:space-between; padding:8px; border-bottom:1px solid #444;">
+                    <span>ID: ${id}</span> <span onclick="delete coreDB['${id}']; localStorage.setItem('g_core_db', JSON.stringify(coreDB)); renderAdminCores();" style="color:red">×</span>
+                </div>`).join('');
+        }
+
+        // --- COMMITTEE ---
+        function openTab(t) { 
+            currentTab = t; 
+            dashboardHome.classList.add('hidden'); 
+            dashboardDetail.classList.remove('hidden'); 
+            if(t === 'mentors') {
+                tabHeader.innerText = "OUR MENTORS";
+                addMemberBtn.innerText = "➕ Add Mentor";
+            } else {
+                tabHeader.innerText = t.toUpperCase() + " HEADS";
+                addMemberBtn.innerText = "➕ Add Member";
+            }
+            renderMembers(); 
+        }
+        function closeTab() { dashboardHome.classList.remove('hidden'); dashboardDetail.classList.add('hidden'); }
+        function renderMembers() {
+            if(currentTab === 'mentors') {
+                let mentors = JSON.parse(localStorage.getItem('g_mentors') || "[]");
+                const isAdmin = currentAuth === 'admin';
+                memberList.innerHTML = mentors.map((m, i) => `<div class="card" style="text-align:center; position:relative;">
+                    ${m.img ? `<img src="${m.img}" class="member-img">` : ''}
+                    <h4>${m.name}</h4>
+                    <p>${m.designation}</p>
+                    ${isAdmin ? `<div style="position:absolute; top:8px; right:8px; display:flex; gap:8px;">
+                        <i class="fas fa-edit" onclick="editMentor(${i})" style="cursor:pointer; color:var(--accent); font-size:14px;"></i>
+                        <i class="fas fa-trash" onclick="deleteMentor(${i})" style="cursor:pointer; color:var(--danger); font-size:14px;"></i>
+                    </div>` : ''}
+                </div>`).join('');
+                memberList.style.display = 'grid';
+                memberList.style.gridTemplateColumns = '1fr 1fr';
+                memberList.style.gap = '10px';
+            } else {
+                let data = JSON.parse(localStorage.getItem('com_'+currentTab) || "[]");
+                memberList.innerHTML = data.map(m => `<div class="card" style="text-align:center;"><img src="${m.img}" class="member-img"><h4>${m.name}</h4><p>${m.branch}</p></div>`).join('');
+                memberList.style.display = 'block';
+            }
+        }
+        function addMember() {
+            if(currentTab === 'mentors') {
+                addMentor();
+                return;
+            }
+            memberPhotoInp.onchange = (e) => {
+                let r = new FileReader();
+                r.onload = () => {
+                    let d = JSON.parse(localStorage.getItem('com_'+currentTab)||"[]");
+                    d.push({name: prompt("Name:"), branch: prompt("Branch:"), img: r.result});
+                    localStorage.setItem('com_'+currentTab, JSON.stringify(d)); renderMembers();
+                };
+                r.readAsDataURL(e.target.files[0]);
+            }
+            memberPhotoInp.click();
+        }
+
+        // --- MISC ---
+        function markAttendance() {
+            let data = JSON.parse(localStorage.getItem('att_log') || "[]");
+            data.unshift({name: atName.value, roll: atRoll.value, sport: atSport.value, time: new Date().toLocaleString()});
+            localStorage.setItem('att_log', JSON.stringify(data)); renderAttList();
+        }
+        function renderAttList() {
+            let data = JSON.parse(localStorage.getItem('att_log') || "[]");
+            attList.innerHTML = data.map(a => `<div class="stat-card"><b>${a.name}</b><br><small>${a.sport}</small></div>`).join('');
+        }
+        function addHoliday() {
+            const t = prompt("Name:"); const d = prompt("Date:");
+            if(t && d) {
+                let h = JSON.parse(localStorage.getItem('g_holidays') || "[]");
+                h.push({t, d}); localStorage.setItem('g_holidays', JSON.stringify(h)); renderHolidays();
+            }
+        }
+        function renderHolidays() {
+            let h = JSON.parse(localStorage.getItem('g_holidays') || "[]");
+            const isCore = currentAuth === 'admin' || currentAuth === 'core';
+            hList.innerHTML = h.map((item, i) => `<div class="event-chip" style="position:relative;">
+                <small>${item.d}</small>
+                <p>${item.t}</p>
+                ${isCore ? `<div style="position:absolute; top:8px; right:8px; display:flex; gap:8px;">
+                    <i class="fas fa-edit" onclick="editHoliday(${i})" style="cursor:pointer; color:var(--accent); font-size:14px;"></i>
+                    <i class="fas fa-trash" onclick="deleteHoliday(${i})" style="cursor:pointer; color:var(--danger); font-size:14px;"></i>
+                </div>` : ''}
+            </div>`).join('');
+        }
+        function editHoliday(index) {
+            let h = JSON.parse(localStorage.getItem('g_holidays') || "[]");
+            if(index >= 0 && index < h.length) {
+                const newName = prompt("Edit Holiday Name:", h[index].t);
+                const newDate = prompt("Edit Date:", h[index].d);
+                if(newName && newDate) {
+                    h[index] = {t: newName, d: newDate};
+                    localStorage.setItem('g_holidays', JSON.stringify(h));
+                    renderHolidays();
+                }
+            }
+        }
+        function deleteHoliday(index) {
+            if(confirm("Delete this holiday?")) {
+                let h = JSON.parse(localStorage.getItem('g_holidays') || "[]");
+                h.splice(index, 1);
+                localStorage.setItem('g_holidays', JSON.stringify(h));
+                renderHolidays();
+            }
+        }
+
+        // --- MENTOR SYSTEM ---
+        function addMentor() {
+            if(currentAuth !== 'admin') {
+                alert("Only admin can add mentors");
+                return;
+            }
+            mentorPhotoInp.onchange = (e) => {
+                let r = new FileReader();
+                r.onload = () => {
+                    const name = prompt("Mentor Name:");
+                    const designation = prompt("Designation/Role:");
+                    if(name && designation) {
+                        let mentors = JSON.parse(localStorage.getItem('g_mentors') || "[]");
+                        mentors.push({name, designation, img: r.result});
+                        localStorage.setItem('g_mentors', JSON.stringify(mentors));
+                        renderMembers();
+                        renderMentorsHome();
+                    }
+                };
+                r.readAsDataURL(e.target.files[0]);
+            }
+            mentorPhotoInp.click();
+        }
+        function editMentor(index) {
+            if(currentAuth !== 'admin') {
+                alert("Only admin can edit mentors");
+                return;
+            }
+            let mentors = JSON.parse(localStorage.getItem('g_mentors') || "[]");
+            if(index >= 0 && index < mentors.length) {
+                const newName = prompt("Edit Mentor Name:", mentors[index].name);
+                const newDesignation = prompt("Edit Designation:", mentors[index].designation);
+                if(newName && newDesignation) {
+                    if(confirm("Change photo?")) {
+                        mentorPhotoInp.onchange = (e) => {
+                            let r = new FileReader();
+                            r.onload = () => {
+                                mentors[index] = {name: newName, designation: newDesignation, img: r.result};
+                                localStorage.setItem('g_mentors', JSON.stringify(mentors));
+                                renderMembers();
+                                renderMentorsHome();
+                            };
+                            r.readAsDataURL(e.target.files[0]);
+                        }
+                        mentorPhotoInp.click();
+                    } else {
+                        mentors[index] = {name: newName, designation: newDesignation, img: mentors[index].img || null};
+                        localStorage.setItem('g_mentors', JSON.stringify(mentors));
+                        renderMembers();
+                        renderMentorsHome();
+                    }
+                }
+            }
+        }
+        function deleteMentor(index) {
+            if(currentAuth !== 'admin') {
+                alert("Only admin can delete mentors");
+                return;
+            }
+            if(confirm("Delete this mentor?")) {
+                let mentors = JSON.parse(localStorage.getItem('g_mentors') || "[]");
+                mentors.splice(index, 1);
+                localStorage.setItem('g_mentors', JSON.stringify(mentors));
+                renderMembers();
+                renderMentorsHome();
+            }
+        }
+        function renderMentorsHome() {
+            let mentors = JSON.parse(localStorage.getItem('g_mentors') || "[]");
+            const isAdmin = currentAuth === 'admin';
+            mentorListHome.innerHTML = mentors.map((m, i) => {
+                return `<div class="event-chip" style="position:relative;">
+                    <small>${m.designation}</small>
+                    <p>${m.name}</p>
+                    ${isAdmin ? `<div style="position:absolute; top:8px; right:8px; display:flex; gap:8px;">
+                        <i class="fas fa-edit" onclick="editMentor(${i})" style="cursor:pointer; color:var(--accent); font-size:14px;"></i>
+                        <i class="fas fa-trash" onclick="deleteMentor(${i})" style="cursor:pointer; color:var(--danger); font-size:14px;"></i>
+                    </div>` : ''}
+                </div>`;
+            }).join('');
+            if(mentors.length === 0) {
+                mentorListHome.innerHTML = '<div style="text-align:center; color:var(--text-dim); padding:20px;">No mentors added yet</div>';
+            }
+        }
+
+        logoUploader.onchange = (e) => {
+            let r = new FileReader();
+            r.onload = () => { localStorage.setItem('g_logo', r.result); clubLogo.src = r.result; };
+            r.readAsDataURL(e.target.files[0]);
+        }
+
+        window.onload = () => {
+            if(localStorage.getItem('g_bg')) document.body.style.backgroundImage = `url('${localStorage.getItem('g_bg')}')`;
+            if(localStorage.getItem('g_logo')) clubLogo.src = localStorage.getItem('g_logo');
+            
+            // Banner Logic
+            if(localStorage.getItem('g_msg_s')==='Y') { 
+                floatTag.innerText = localStorage.getItem('g_msg'); 
+                setTimeout(()=> floatTag.style.right='0', 500); 
+            }
+
+            if(!currentAuth) { loginOverlay.style.display='flex'; return; }
+            loginOverlay.style.display='none'; uDisplay.innerText = currentAuth.toUpperCase();
+            
+            if(localStorage.getItem('log_s') === 'OFF') { logFormArea.classList.add('hidden'); logOfflineMsg.classList.remove('hidden'); logToggleBtn.innerText="Publish"; }
+            if(localStorage.getItem('reg_s') === 'OFF') { regFormArea.classList.add('hidden'); regOfflineMsg.classList.remove('hidden'); regToggleBtn.innerText="Publish"; }
+
+            if(currentAuth === 'admin' || currentAuth === 'core') document.querySelectorAll('.core-only').forEach(e => e.classList.remove('hidden'));
+            if(currentAuth === 'admin') { 
+                document.querySelectorAll('.admin-only').forEach(e => e.classList.remove('hidden'));
+                renderAdminCores();
+            }
+
+            renderEvents(); renderBudget(); renderAttList(); renderHolidays(); renderMentorsHome(); renderTournaments();
+        }
+    </script>
+</body>
+</html>

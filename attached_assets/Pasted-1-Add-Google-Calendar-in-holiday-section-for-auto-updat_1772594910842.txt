@@ -1,0 +1,92 @@
+1. Add Google Calendar in holiday section for auto update
+
+2. Add excel sheet in attendance & Registration form to see directly all attend in excel sheet and only admin can edit that excel sheet core cannot edit Core 10 download that excel sheet but cannot add it
+
+3. In Budget section add to section one for budget a lot and second how much we had expense and also add photo uploading for bill connect with excel file to see all the entries and also add an increment button if any money is added in our budget and also editing and delete option in budget list
+
+4. Admin can edit anything in all the panel like he can change the of tournament gallery or ETC name header he can or edit
+
+5. In admin control panel style studio remove URL and add photo uploading direct from dashboard or from gallery
+
+6. Background color or B.G. color and style color can be changed by admin or edit by admin so put and toggle button to change the color of application
+
+7. In Core Access management add to section in Wich core ID and password will show If core members change their password then also it will be shown
+
+8. Also add an option to edit ID and password of core edmund can suspend or remove that ID
+
+9. Core ID and password will be allotted by admin only they cannot create by themselves Password can be changed by core but ID will be given by admin only
+
+10. Also create a new section and name equipment in Equipment list there will be two option first one available item with name and whatever name is written it will create its emoji in colorful manner and second wanted list in which we want equipment and also mention quantity in both and also provide a to edit the information or delete the information in both
+
+11. And whatever data will be collected it should be in excel file and also check wherever the excel file is existing you have to check once if it is connected or not if it is not connected then fix it
+
+12. Core Default (Password: Core2020)
+Core Default ID (name as i mention down )
+
+Can edit Holiday & Branch
+Can edit Registration Form and on/off form
+Can edit and upload Event Page
+Can enter Attendance 
+Can change password according to them
+
+all core members can edit and update 
+dashboard, Registration Form and on/off form, Event Page, attendance by Default. 
+not all core members can see each other work so divide the according to name and there what can de do i mention you soo show that thing in that core id only.
+
+Core (View Only)
+Rishi Bhut
+Pratik
+Arth.15
+➡️ Core can see everything and edit and upload.
+
+
+TREASURER page will show in 
+Hardeep and in Core (View Only)
+Can edit and update 
+Budget
+
+can edit in event upload event and add attendance and dashboad
+Tanna 
+Arijeet
+
+Can edit and update:
+
+EQUIPMENT page will show in 
+Gaurav
+Balli
+Can edit and update:
+Equipment Page
+
+
+Volunteers 
+Zeenal
+Arpan
+Rubresh
+can edit Default of core 
+
+reels and vfx Arth.j
+chitral
+can edit Default of core 
+
+Documents
+Dhyana
+Dhruva
+Devasya
+can edit Default of core
+
+Logistics 
+Dutt
+Khush
+can edit Default of core
+
+13. Student can only see dashboard event page and registration form and in last they can see developer and support ID. 
+ 
+14. Make falling effect in whole application like football bat and ball etc emojis are falling in the background of the application.
+
+
+add this line in each and every page by defalt  
+ <div class="footer-info" style="text-align:center; padding:40px 0; font-size:10px; color:var(--text-dim);">
+                DEVELOPER: BALJINDER SINGH <br> © 2026 GCET SPORTS CLUB<br>SUPPORT:gcetsportsequipment@gmail.com
+            </div>
+        </div>
+    </div>
