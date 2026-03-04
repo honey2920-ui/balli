@@ -9,20 +9,28 @@ export default function Join() {
 
   const isMaster = role === 'admin' || (role === 'core' && coreId && coreCreds[coreId]?.power === 'admin_level');
   const canEdit = isMaster || role === 'core';
+  const isStaff = role === 'admin' || role === 'core';
 
   return (
     <div className="space-y-6 animate-in fade-in zoom-in duration-500">
-      <div className="flex bg-black/40 p-1.5 rounded-2xl border border-white/5 backdrop-blur-md overflow-x-auto scrollbar-hide">
-        <TabButton label="Registration" active={activeTab === 'registration'} onClick={() => setActiveTab('registration')} />
-        <TabButton label="Attendance" active={activeTab === 'attendance'} onClick={() => setActiveTab('attendance')} />
-        <TabButton label="Budget" active={activeTab === 'budget'} onClick={() => setActiveTab('budget')} />
-        <TabButton label="Equipment" active={activeTab === 'equipment'} onClick={() => setActiveTab('equipment')} />
-      </div>
+      {isStaff && (
+        <div className="flex bg-black/40 p-1.5 rounded-2xl border border-white/5 backdrop-blur-md overflow-x-auto scrollbar-hide">
+          <TabButton label="Registration" active={activeTab === 'registration'} onClick={() => setActiveTab('registration')} />
+          <TabButton label="Attendance" active={activeTab === 'attendance'} onClick={() => setActiveTab('attendance')} />
+          <TabButton label="Budget" active={activeTab === 'budget'} onClick={() => setActiveTab('budget')} />
+          <TabButton label="Equipment" active={activeTab === 'equipment'} onClick={() => setActiveTab('equipment')} />
+        </div>
+      )}
 
       {activeTab === 'registration' && <FormView title="Registration Form" actionLabel="Submit Registration" dbTitle="Registration Database (Mock)" xlsx="registration_2026.xlsx" canEdit={canEdit} />}
-      {activeTab === 'attendance' && <FormView title="Attendance Form" actionLabel="Mark Attendance" dbTitle="Attendance Database (Mock)" xlsx="attendance_2026.xlsx" canEdit={canEdit} />}
-      {activeTab === 'budget' && <BudgetView expenses={expenses} addExpense={addExpense} deleteExpense={deleteExpense} canEdit={canEdit} />}
-      {activeTab === 'equipment' && <EquipmentView equipment={equipment} addEquipment={addEquipment} deleteEquipment={deleteEquipment} canEdit={canEdit} />}
+      
+      {isStaff && (
+        <>
+          {activeTab === 'attendance' && <FormView title="Attendance Form" actionLabel="Mark Attendance" dbTitle="Attendance Database (Mock)" xlsx="attendance_2026.xlsx" canEdit={canEdit} />}
+          {activeTab === 'budget' && <BudgetView expenses={expenses} addExpense={addExpense} deleteExpense={deleteExpense} canEdit={canEdit} />}
+          {activeTab === 'equipment' && <EquipmentView equipment={equipment} addEquipment={addEquipment} deleteEquipment={deleteEquipment} canEdit={canEdit} />}
+        </>
+      )}
     </div>
   );
 }
@@ -73,15 +81,17 @@ function FormView({ title, actionLabel, dbTitle, xlsx, canEdit }: any) {
         </button>
       </div>
 
-      <div className="bg-white/5 border border-white/10 rounded-[28px] p-6 flex items-center justify-between backdrop-blur-md">
-        <div>
-          <h4 className="font-bold text-lg">{dbTitle}</h4>
-          <p className="text-xs text-white/30 font-mono tracking-wider">Connected to: {xlsx}</p>
+      {canEdit && (
+        <div className="bg-white/5 border border-white/10 rounded-[28px] p-6 flex items-center justify-between backdrop-blur-md">
+          <div>
+            <h4 className="font-bold text-lg">{dbTitle}</h4>
+            <p className="text-xs text-white/30 font-mono tracking-wider">Connected to: {xlsx}</p>
+          </div>
+          <button className="flex items-center gap-2 bg-[#10b981]/10 text-[#10b981] px-4 py-2 rounded-xl text-sm font-bold border border-[#10b981]/20 hover:bg-[#10b981]/20 transition-all active:scale-95">
+            <FileSpreadsheet size={18} /> Open Excel
+          </button>
         </div>
-        <button className="flex items-center gap-2 bg-[#10b981]/10 text-[#10b981] px-4 py-2 rounded-xl text-sm font-bold border border-[#10b981]/20 hover:bg-[#10b981]/20 transition-all active:scale-95">
-          <FileSpreadsheet size={18} /> Open Excel
-        </button>
-      </div>
+      )}
     </motion.div>
   );
 }

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useLocation } from 'wouter';
 import { useAppStore } from '@/lib/store';
 import { DynamicIsland } from './DynamicIsland';
@@ -25,6 +25,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
     }, 1500);
     return () => clearInterval(interval);
   }, []);
+
+  const isStaff = role === 'admin' || role === 'core';
 
   return (
     <div className="min-h-screen pb-24 relative overflow-hidden font-sans">
@@ -60,7 +62,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <NavItem icon={<Home size={22} />} label="Home" active={loc === '/'} onClick={() => setLoc('/')} />
           <NavItem icon={<Trophy size={22} />} label="Events" active={loc === '/events'} onClick={() => setLoc('/events')} />
           <NavItem icon={<UserPlus size={22} />} label="Join" active={loc === '/join'} onClick={() => setLoc('/join')} />
-          {(role === 'admin' || role === 'core') && (
+          {isStaff && (
             <NavItem icon={<ShieldAlert size={22} />} label="Admin" active={loc === '/admin'} onClick={() => setLoc('/admin')} />
           )}
         </nav>
