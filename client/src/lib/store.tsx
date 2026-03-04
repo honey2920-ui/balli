@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 
 export type Role = 'student' | 'core' | 'admin' | null;
 
@@ -27,6 +27,21 @@ export interface CoreCreds {
   power: 'normal' | 'admin_level';
 }
 
+export interface Expense {
+  id: string;
+  type: 'allotted' | 'expense';
+  item: string;
+  amount: number;
+  date: string;
+}
+
+export interface Equipment {
+  id: string;
+  name: string;
+  qty: number;
+  type: 'available' | 'wanted';
+}
+
 interface AppState {
   role: Role;
   coreId: string | null;
@@ -34,6 +49,8 @@ interface AppState {
   mentors: Mentor[];
   coreMembers: CoreMember[];
   holidays: any[];
+  expenses: Expense[];
+  equipment: Equipment[];
   islandMessage: string | null;
   login: (role: Role, id?: string) => void;
   logout: () => void;
@@ -48,6 +65,10 @@ interface AppState {
   updateCoreId: (oldId: string, newId: string) => void;
   addCoreCred: (id: string, pass: string, power?: 'normal' | 'admin_level') => void;
   deleteCoreCred: (id: string) => void;
+  addExpense: (e: Omit<Expense, 'id'>) => void;
+  deleteExpense: (id: string) => void;
+  addEquipment: (e: Omit<Equipment, 'id'>) => void;
+  deleteEquipment: (id: string) => void;
 }
 
 const defaultCreds: Record<string, CoreCreds> = {
@@ -73,11 +94,16 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     { id: 'c2', department: 'Equipment Head', name: 'Bob', branch: 'Mechanical', description: 'Manages inventory', dateAdded: '2026-01-01' }
   ]);
 
+  const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [equipment, setEquipment] = useState<Equipment[]>([
+    { id: 'e1', name: 'Football', qty: 5, type: 'available' },
+    { id: 'e2', name: 'Cricket Bat', qty: 2, type: 'wanted' }
+  ]);
+
   const [holidays, setHolidays] = useState<any[]>([]);
 
   const showIsland = (msg: string) => {
     setIslandMessage(msg);
-    setTimeout(() => setIslandMessage(null), 3000);
   };
 
   const login = (r: Role, id?: string) => {
@@ -137,7 +163,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       }
       return newCreds;
     });
-    // Update active core ID if they rename themselves
     if (coreId === oldId) {
       setCoreId(newId);
     }
@@ -158,13 +183,34 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     showIsland('Core ID revoked');
   };
 
+  const addExpense = (e: Omit<Expense, 'id'>) => {
+    setExpenses([...expenses, { ...e, id: Math.random().toString(36).substr(2, 9) }]);
+    showIsland(`${e.type === 'allotted' ? 'Budget' : 'Expense'} added`);
+  };
+
+  const deleteExpense = (id: string) => {
+    setExpenses(expenses.filter(e => e.id !== id));
+    showIsland('Entry deleted');
+  };
+
+  const addEquipment = (e: Omit<Equipment, 'id'>) => {
+    setEquipment([...equipment, { ...e, id: Math.random().toString(36).substr(2, 9) }]);
+    showIsland('Equipment added');
+  };
+
+  const deleteEquipment = (id: string) => {
+    setEquipment(equipment.filter(e => e.id !== id));
+    showIsland('Equipment removed');
+  };
+
   return (
     <MockContext.Provider value={{
-      role, coreId, coreCreds, mentors, coreMembers, holidays, islandMessage,
+      role, coreId, coreCreds, mentors, coreMembers, holidays, expenses, equipment, islandMessage,
       setIslandMessage, login, logout, 
       addMentor, updateMentor, deleteMentor,
       addCoreMember, updateCoreMember, deleteCoreMember,
-      updateCoreCred, updateCoreId, addCoreCred, deleteCoreCred
+      updateCoreCred, updateCoreId, addCoreCred, deleteCoreCred,
+      addExpense, deleteExpense, addEquipment, deleteEquipment
     }}>
       {children}
     </MockContext.Provider>
