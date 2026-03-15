@@ -141,6 +141,7 @@ interface AppState {
   updateEvent: (id: string, e: Partial<EventItem>) => void;
   deleteEvent: (id: string) => void;
   addRegistration: (r: Omit<Registration, 'id' | 'date'>) => void;
+  updateRegistration: (id: string, r: Partial<Registration>) => void;
   deleteRegistration: (id: string) => void;
 }
 
@@ -383,6 +384,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     showIsland('Registration submitted');
   };
 
+  const updateRegistration = (id: string, r: Partial<Registration>) => {
+    setRegistrations(registrations.map(x => x.id === id ? { ...x, ...r } : x));
+    showIsland('Registration updated');
+  };
+
   const deleteRegistration = (id: string) => {
     setRegistrations(registrations.filter(x => x.id !== id));
     showIsland('Registration removed');
@@ -400,7 +406,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       addHoliday, updateHoliday, deleteHoliday,
       addPortal, updatePortal, deletePortal,
       addEvent, updateEvent, deleteEvent,
-      addRegistration, deleteRegistration
+      addRegistration, updateRegistration, deleteRegistration
     }}>
       {children}
     </MockContext.Provider>

@@ -63,6 +63,48 @@ function FormView({ title, actionLabel, canEdit, showUpload, isRegistration }: a
   // Print options
   const [printIds, setPrintIds] = useState<string>('');
   
+  // Edit options
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editName, setEditName] = useState('');
+  const [editEvent, setEditEvent] = useState('');
+  const [editRollNo, setEditRollNo] = useState('');
+  const [editMobile, setEditMobile] = useState('');
+  const [editYear, setEditYear] = useState('');
+  const [editSem, setEditSem] = useState('');
+  const [editEngType, setEditEngType] = useState('');
+  const [editPhoto, setEditPhoto] = useState<string | null>(null);
+  
+  const { updateRegistration } = useAppStore();
+
+  const handleEditClick = (r: any) => {
+    setEditingId(r.id);
+    setEditName(r.name);
+    setEditEvent(r.event);
+    setEditRollNo(r.rollNo);
+    setEditMobile(r.mobile);
+    setEditYear(r.year);
+    setEditSem(r.sem);
+    setEditEngType(r.engType);
+    setEditPhoto(r.photo || null);
+  };
+
+  const handleSaveEdit = () => {
+    if (editingId) {
+      updateRegistration(editingId, {
+        name: editName,
+        event: editEvent,
+        rollNo: editRollNo,
+        mobile: editMobile,
+        year: editYear,
+        sem: editSem,
+        engType: editEngType,
+        photo: editPhoto
+      });
+      setEditingId(null);
+      setIslandMessage('Registration updated');
+    }
+  };
+  
   const isPublished = isRegistration ? formPublished : attendanceFormPublished;
   const togglePublished = () => {
     if (isRegistration) setFormPublished(!formPublished);
@@ -117,6 +159,12 @@ function FormView({ title, actionLabel, canEdit, showUpload, isRegistration }: a
                terms.includes(String(index + 1));
       })
     : registrations;
+
+  const getPrintSizeClass = () => {
+    if (currentRegistrations.length === 1) return 'id-card-single';
+    if (currentRegistrations.length <= 4) return 'id-card-standard';
+    return 'id-card-license';
+  };
 
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
@@ -255,58 +303,98 @@ function FormView({ title, actionLabel, canEdit, showUpload, isRegistration }: a
               No registrations yet.
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 print:grid-cols-2 print:gap-4 print:block print:w-full">
+            <div className={`grid grid-cols-1 md:grid-cols-2 gap-6 print:block print:w-full`}>
               {currentRegistrations.map(r => (
-                <div key={r.id} className="id-card-print bg-white/5 border border-white/20 p-6 rounded-[24px] relative group overflow-hidden">
-                  {/* ID Card Design */}
-                  <div className="absolute top-0 right-0 p-4 opacity-10">
-                    <span className="text-6xl">⚽</span>
-                  </div>
-                  
-                  <div className="flex gap-5 relative z-10">
-                    <div className="w-24 h-32 rounded-xl bg-black/40 border border-white/10 flex-shrink-0 overflow-hidden flex items-center justify-center">
-                      {r.photo ? (
-                        <img src={r.photo} alt={r.name} className="w-full h-full object-cover" />
-                      ) : (
-                        <span className="text-4xl text-white/20">👤</span>
-                      )}
-                    </div>
-                    <div className="flex-1">
-                      <h4 className="font-extrabold text-xl mb-1 text-[#6b5cff] uppercase tracking-wide id-card-text">{r.name}</h4>
-                      <p className="text-xs font-bold text-[#fca311] mb-3 tracking-widest uppercase id-card-text">{r.event}</p>
-                      
-                      <div className="grid grid-cols-2 gap-y-2 text-xs">
-                        <div>
-                          <span className="text-white/40 uppercase tracking-wider text-[9px] block id-card-label">Roll No</span>
-                          <span className="font-mono font-bold id-card-text">{r.rollNo}</span>
-                        </div>
-                        <div>
-                          <span className="text-white/40 uppercase tracking-wider text-[9px] block id-card-label">Mobile</span>
-                          <span className="font-mono font-bold id-card-text">{r.mobile}</span>
-                        </div>
-                        <div>
-                          <span className="text-white/40 uppercase tracking-wider text-[9px] block id-card-label">Year/Sem</span>
-                          <span className="font-bold id-card-text">{r.year} Yr / {r.sem} Sem</span>
-                        </div>
-                        <div>
-                          <span className="text-white/40 uppercase tracking-wider text-[9px] block id-card-label">Type</span>
-                          <span className="font-bold id-card-text">{r.engType}</span>
-                        </div>
+                <div key={r.id} className={`id-card-print bg-white/5 border border-white/20 p-6 rounded-[24px] relative group overflow-hidden ${getPrintSizeClass()}`}>
+                  {editingId === r.id ? (
+                    <div className="space-y-3 relative z-10 no-print">
+                      <input type="text" value={editName} onChange={e => setEditName(e.target.value)} className="w-full bg-black/40 border border-[#6b5cff]/30 rounded-lg px-3 py-2 text-sm text-white" placeholder="Name" />
+                      <input type="text" value={editEvent} onChange={e => setEditEvent(e.target.value)} className="w-full bg-black/40 border border-[#6b5cff]/30 rounded-lg px-3 py-2 text-sm text-white" placeholder="Event" />
+                      <div className="grid grid-cols-2 gap-2">
+                        <input type="text" value={editRollNo} onChange={e => setEditRollNo(e.target.value)} className="w-full bg-black/40 border border-[#6b5cff]/30 rounded-lg px-3 py-2 text-sm text-white" placeholder="Roll No" />
+                        <input type="text" value={editMobile} onChange={e => setEditMobile(e.target.value)} className="w-full bg-black/40 border border-[#6b5cff]/30 rounded-lg px-3 py-2 text-sm text-white" placeholder="Mobile" />
+                        <input type="text" value={editYear} onChange={e => setEditYear(e.target.value)} className="w-full bg-black/40 border border-[#6b5cff]/30 rounded-lg px-3 py-2 text-sm text-white" placeholder="Year" />
+                        <input type="text" value={editSem} onChange={e => setEditSem(e.target.value)} className="w-full bg-black/40 border border-[#6b5cff]/30 rounded-lg px-3 py-2 text-sm text-white" placeholder="Sem" />
+                        <input type="text" value={editEngType} onChange={e => setEditEngType(e.target.value)} className="w-full bg-black/40 border border-[#6b5cff]/30 rounded-lg px-3 py-2 text-sm text-white" placeholder="Type" />
+                      </div>
+                      <div className="flex gap-2 mt-4">
+                        <button onClick={handleSaveEdit} className="flex-1 bg-[#10b981] hover:bg-[#0da06f] text-white py-2 rounded-lg font-bold text-sm">Save</button>
+                        <button onClick={() => setEditingId(null)} className="flex-1 bg-red-500/20 hover:bg-red-500 text-red-400 hover:text-white py-2 rounded-lg font-bold text-sm">Cancel</button>
                       </div>
                     </div>
-                  </div>
-                  
-                  <div className="mt-4 pt-4 border-t border-white/10 flex justify-between items-center">
-                    <span className="text-[10px] font-mono text-white/30 id-card-label">ID: {r.id.toUpperCase()}</span>
-                    <span className="text-[10px] font-bold text-white/50 tracking-widest id-card-label">GCET SPORTS CLUB</span>
-                  </div>
-
-                  <button 
-                    onClick={() => deleteRegistration(r.id)}
-                    className="no-print absolute top-4 right-4 p-2 bg-red-500/20 text-red-400 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500 hover:text-white"
-                  >
-                    <Trash2 size={16} />
-                  </button>
+                  ) : (
+                    <>
+                      {/* ID Card Design */}
+                      <div className="absolute top-0 right-0 p-4 opacity-10">
+                        <span className="text-6xl">⚽</span>
+                      </div>
+                      
+                      <div className="flex gap-5 relative z-10">
+                        <div className="w-24 h-32 rounded-xl bg-black/40 border border-white/10 flex-shrink-0 overflow-hidden flex items-center justify-center">
+                          {r.photo ? (
+                            <img src={r.photo} alt={r.name} className="w-full h-full object-cover" />
+                          ) : (
+                            <span className="text-4xl text-white/20">👤</span>
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="font-extrabold text-xl mb-1 text-[#6b5cff] uppercase tracking-wide id-card-text">{r.name}</h4>
+                          <p className="text-xs font-bold text-[#fca311] mb-3 tracking-widest uppercase id-card-text">{r.event}</p>
+                          
+                          <div className="grid grid-cols-2 gap-y-2 text-xs">
+                            <div>
+                              <span className="text-white/40 uppercase tracking-wider text-[9px] block id-card-label">Roll No</span>
+                              <span className="font-mono font-bold id-card-text">{r.rollNo}</span>
+                            </div>
+                            <div>
+                              <span className="text-white/40 uppercase tracking-wider text-[9px] block id-card-label">Mobile</span>
+                              <span className="font-mono font-bold id-card-text">{r.mobile}</span>
+                            </div>
+                            <div>
+                              <span className="text-white/40 uppercase tracking-wider text-[9px] block id-card-label">Year/Sem</span>
+                              <span className="font-bold id-card-text">{r.year} Yr / {r.sem} Sem</span>
+                            </div>
+                            <div>
+                              <span className="text-white/40 uppercase tracking-wider text-[9px] block id-card-label">Type</span>
+                              <span className="font-bold id-card-text">{r.engType}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="mt-4 pt-4 border-t border-white/10 flex justify-between items-center">
+                        <span className="text-[10px] font-mono text-white/30 id-card-label">ID: {r.id.toUpperCase()}</span>
+                        <span className="text-[10px] font-bold text-white/50 tracking-widest id-card-label">GCET SPORTS CLUB</span>
+                      </div>
+    
+                      <div className="no-print absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button 
+                          onClick={() => {
+                            setPrintIds(r.id);
+                            setTimeout(() => window.print(), 100);
+                          }}
+                          className="p-2 bg-blue-500/20 text-blue-400 rounded-lg hover:bg-blue-500 hover:text-white"
+                          title="Download PDF"
+                        >
+                          <Download size={16} />
+                        </button>
+                        <button 
+                          onClick={() => handleEditClick(r)}
+                          className="p-2 bg-[#fca311]/20 text-[#fca311] rounded-lg hover:bg-[#fca311] hover:text-white"
+                          title="Edit"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                        </button>
+                        <button 
+                          onClick={() => deleteRegistration(r.id)}
+                          className="p-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500 hover:text-white"
+                          title="Delete"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </>
+                  )}
                 </div>
               ))}
             </div>

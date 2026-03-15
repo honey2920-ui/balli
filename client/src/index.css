@@ -152,9 +152,42 @@
     box-shadow: none !important;
     padding: 16px !important;
     margin-bottom: 16px !important;
-    display: inline-block !important; /* Forces block layout instead of flex for printing if needed */
-    width: 100% !important;
+    display: inline-block !important;
+    position: relative;
+    box-sizing: border-box;
   }
+
+  /* Single ID Card: School Size (approx 3.375" x 2.125" or scaled up for readability) */
+  .id-card-single {
+    width: 8.5cm !important;
+    height: 5.4cm !important;
+    padding: 10px !important;
+  }
+  .id-card-single .text-xl { font-size: 14px !important; }
+  .id-card-single .text-xs { font-size: 8px !important; }
+  .id-card-single .w-24 { width: 45px !important; height: 60px !important; }
+
+  /* Standard Size (few IDs) */
+  .id-card-standard {
+    width: 8.5cm !important;
+    height: 5.4cm !important;
+    padding: 10px !important;
+  }
+  .id-card-standard .text-xl { font-size: 14px !important; }
+  .id-card-standard .text-xs { font-size: 8px !important; }
+  .id-card-standard .w-24 { width: 45px !important; height: 60px !important; }
+  
+  /* Driving License Size (many IDs) */
+  .id-card-license {
+    width: 8.5cm !important;
+    height: 5.4cm !important;
+    padding: 8px !important;
+  }
+  .id-card-license .text-xl { font-size: 12px !important; }
+  .id-card-license .text-xs { font-size: 7px !important; }
+  .id-card-license .text-\[9px\] { font-size: 6px !important; }
+  .id-card-license .text-\[10px\] { font-size: 6px !important; }
+  .id-card-license .w-24 { width: 40px !important; height: 50px !important; }
   
   /* Tables for print (budget, attendance, equipment) */
   .print-table-container {
