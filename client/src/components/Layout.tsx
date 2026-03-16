@@ -33,7 +33,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       className="min-h-screen pb-24 relative overflow-hidden font-sans bg-[#0b102a] print-bg-white"
       style={bgUrl ? { backgroundImage: `url(${bgUrl})`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundAttachment: 'fixed' } : {}}
     >
-      <div id="falling-container" className="fixed inset-0 pointer-events-none z-0 opacity-[0.03] print:hidden" />
+      <div id="falling-container" className="fixed inset-0 pointer-events-none z-0 opacity-[0.15] print:hidden" />
       <div className="print:hidden"><DynamicIsland /></div>
       <div className="print:hidden"><LoginModal /></div>
 

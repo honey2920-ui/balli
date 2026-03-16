@@ -211,7 +211,7 @@ export default function Admin() {
         )}
 
         <div className="bg-[#181832] rounded-[24px] border border-white/5 overflow-hidden">
-          <div className="grid grid-cols-12 gap-4 p-5 border-b border-white/10 text-[10px] font-bold text-white/40 uppercase tracking-widest bg-black/20">
+          <div className="hidden md:grid grid-cols-12 gap-4 p-5 border-b border-white/10 text-[10px] font-bold text-white/40 uppercase tracking-widest bg-black/20">
             <div className="col-span-5">NAME & ID</div>
             <div className="col-span-5">ROLE & POST</div>
             <div className="col-span-2 text-right">ACTIONS</div>
@@ -219,8 +219,8 @@ export default function Admin() {
 
           <div className="divide-y divide-white/5">
             {visibleCreds.map(cred => (
-              <div key={cred.id} className="grid grid-cols-12 gap-4 p-5 items-center hover:bg-white/5 transition-colors group border-b border-white/5 last:border-0">
-                <div className="col-span-5 flex flex-col gap-1">
+              <div key={cred.id} className="flex flex-col md:grid md:grid-cols-12 gap-4 p-5 items-start md:items-center hover:bg-white/5 transition-colors group border-b border-white/5 last:border-0">
+                <div className="col-span-5 flex flex-col gap-1 w-full">
                   <div className="flex items-center gap-2">
                     <input 
                       disabled={!canManageIDs}
@@ -244,7 +244,7 @@ export default function Admin() {
                   )}
                 </div>
                 
-                <div className="col-span-5 flex flex-col gap-2">
+                <div className="col-span-5 flex flex-col gap-2 w-full mt-2 md:mt-0">
                   <div className="relative inline-block w-fit">
                     <select 
                       disabled={!canManageIDs}
@@ -269,7 +269,7 @@ export default function Admin() {
                   </div>
                 </div>
 
-                <div className="col-span-2 flex justify-end items-center gap-3">
+                <div className="col-span-2 flex justify-end items-center gap-3 w-full md:w-auto mt-2 md:mt-0">
                   {(canManageIDs || cred.id === coreId) && (
                      <button 
                      onClick={() => {
